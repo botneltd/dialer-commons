@@ -1,0 +1,5 @@
+jdk:
+    - openjdk17
+before_install:
+    - apt-get update
+    - apt-get install -y cmake
