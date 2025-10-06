@@ -8,6 +8,24 @@ plugins {
     alias(libs.plugins.detekt).apply(false)
 }
 
+subprojects {
+    plugins.withId("io.gitlab.arturbosch.detekt") {
+        configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
+            buildUponDefaultConfig = true
+            config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+            baseline = file("$rootDir/config/detekt/detekt-baseline.xml")
+            ignoreFailures = true
+
+            reports {
+                html.required.set(true)
+                html.outputLocation.set(file("$buildDir/reports/detekt.html"))
+                xml.required.set(false)
+                txt.required.set(false)
+            }
+        }
+    }
+}
+
 tasks.register<Delete>("clean") {
     delete {
         layout.buildDirectory.asFile

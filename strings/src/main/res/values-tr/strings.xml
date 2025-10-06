@@ -3,7 +3,7 @@
     <string name="settings_icon">Ayarlar simgesi</string>
     <string name="total_g">Toplam: %s</string>
     <string name="last_g">Son: %s</string>
-    <string name="next_g">Sonraki: s</string>
+    <string name="next_g">Sonraki: %s</string>
     <string name="time">Zaman</string>
     <string name="interval">Aralık</string>
     <string name="symbols_first">Önce Semboller (örneğin !@#$)</string>

@@ -150,7 +150,7 @@
     <string name="hide_blocked_numbers">הסתר חסום</string>
     <string name="paste_g">להוסיף</string>
     <string name="recents">חדש</string>
-    <string name="unblock_confirmation">לבטל את חסימת \"% s\"?</string>
+    <string name="unblock_confirmation">לבטל את חסימת "%s"?</string>
 
     <!-- Other -->
     <string name="contact_thumbnails_size">גודל תמונות ממוזערות של אנשי קשר</string>
