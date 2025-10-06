@@ -94,7 +94,7 @@ fun Activity.appLaunched(appId: String) {
 
 fun Activity.isAppInstalledOnSDCard(): Boolean = try {
     val applicationInfo = packageManager.getPackageInfo(packageName, 0).applicationInfo
-    (applicationInfo.flags and ApplicationInfo.FLAG_EXTERNAL_STORAGE) == ApplicationInfo.FLAG_EXTERNAL_STORAGE
+    (applicationInfo?.flags?.and(ApplicationInfo.FLAG_EXTERNAL_STORAGE)) == ApplicationInfo.FLAG_EXTERNAL_STORAGE
 } catch (e: Exception) {
     false
 }
@@ -1632,6 +1632,9 @@ fun BaseSimpleActivity.getAlarmSounds(type: Int, callback: (ArrayList<AlarmSound
     try {
         val cursor = manager.cursor
         var curId = 1
+        val defaultAlarmSound = getDefaultAlarmSound(type)
+        val defaultAlarm = AlarmSound(curId++, defaultAlarmSound.title, defaultAlarmSound.uri)
+        alarms.add(defaultAlarm)
         val silentAlarm = AlarmSound(curId++, getString(R.string.no_sound), SILENT)
         alarms.add(silentAlarm)
 
@@ -1708,5 +1711,45 @@ fun Activity.overrideActivityTransition(enterAnim: Int, exitAnim: Int, exiting: 
     } else {
         @Suppress("DEPRECATION")
         overridePendingTransition(enterAnim, exitAnim)
+    }
+}
+
+fun Activity.maybeShowNumberPickerDialog(
+    phoneNumbers: List<PhoneNumber>,
+    respectPrimary: Boolean = false,
+    callback: (number: PhoneNumber) -> Unit
+) {
+    when {
+        phoneNumbers.size == 1 -> callback(phoneNumbers.first())
+        phoneNumbers.size > 1 -> {
+            if (respectPrimary) {
+                val primaryNumber = phoneNumbers.find { it.isPrimary }
+                if (primaryNumber != null) {
+                    callback(primaryNumber)
+                    return
+                }
+            }
+
+            val items = phoneNumbers.mapIndexed { index, phoneNumber ->
+                val type = getPhoneNumberTypeText(phoneNumber.type, phoneNumber.label)
+                val favorite = if (phoneNumber.isPrimary) " ★" else ""
+                RadioItem(
+                    id = index,
+                    title = "${phoneNumber.value} ($type) $favorite",
+                    value = phoneNumber
+                )
+            }
+
+            RadioGroupDialog(
+                activity = this,
+                items = ArrayList(items),
+            ) { selectedPhoneNumber ->
+                callback(selectedPhoneNumber as PhoneNumber)
+            }
+        }
+
+        else -> {
+            toast(R.string.no_phone_number_found)
+        }
     }
 }

@@ -54,7 +54,7 @@ fun SettingsSwitchComponent(
                 interactionSource = interactionSource,
                 indication = indication
             )
-            .padding(start = 20.dp, end = 16.dp, top = 2.dp, bottom = 2.dp),
+            .padding(start = 22.dp, end = 16.dp, top = 2.dp, bottom = 2.dp),
     ) {
         Column(
             modifier = Modifier.weight(1f),
@@ -81,10 +81,10 @@ fun SettingsSwitchComponent(
                         .padding(end = 16.dp),
                     color = preferenceValueColor(isEnabled = isPreferenceEnabled),
                     fontSize = with(LocalDensity.current) {
-                        dimensionResource(id = R.dimen.normal_text_size).toSp()
+                        dimensionResource(id = R.dimen.smaller_text_size).toSp()
                     },
                     lineHeight = with(LocalDensity.current) {
-                        dimensionResource(id = R.dimen.bigger_text_size).toSp()
+                        dimensionResource(id = R.dimen.normal_text_size).toSp()
                     },
                 )
             }

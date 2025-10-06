@@ -215,7 +215,6 @@ fun Context.toggleAppIconColor(appId: String, colorIndex: Int, color: Int, enabl
 
 fun Context.getAppIconColors() = resources.getIntArray(R.array.md_app_icon_colors).toCollection(ArrayList())
 
-@SuppressLint("NewApi")
 fun Context.getBottomNavigationBackgroundColor(): Int {
     val baseColor = baseConfig.backgroundColor
     val bottomColor = when {
@@ -229,9 +228,10 @@ fun Context.getBottomNavigationBackgroundColor(): Int {
 
 fun Context.getDialogBackgroundColor(): Int {
     return when {
-        isDynamicTheme() -> MaterialColors.getColor(
-            this, com.google.android.material.R.attr.colorSurfaceContainerHigh, Color.TRANSPARENT
-        )
+//        isDynamicTheme() -> MaterialColors.getColor(
+//            this, com.google.android.material.R.attr.colorSurfaceContainerHigh, Color.TRANSPARENT
+//        )
+        isDynamicTheme() -> resources.getColor(R.color.you_dialog_background_color, theme)
 
         else -> baseConfig.backgroundColor
     }
@@ -240,4 +240,15 @@ fun Context.getDialogBackgroundColor(): Int {
 fun Context.getProperTextCursorColor() = when {
     isDynamicTheme() -> resources.getColor(R.color.you_primary_color, theme)
     else -> baseConfig.textCursorColor
+}
+
+fun Context.getSurfaceColor(): Int {
+    val baseColor = baseConfig.backgroundColor
+    val bottomColor = when {
+        isDynamicTheme() -> resources.getColor(R.color.you_surface_color, theme)
+        baseColor == Color.WHITE -> resources.getColor(R.color.bottom_tabs_light_background, theme)
+        baseColor == Color.BLACK -> resources.getColor(R.color.bottom_tabs_black_background, theme)
+        else -> baseConfig.backgroundColor.lightenColor(4)
+    }
+    return bottomColor
 }

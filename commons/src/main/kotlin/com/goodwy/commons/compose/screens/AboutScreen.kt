@@ -96,8 +96,6 @@ internal fun AboutNewSection(
         val textColor = MaterialTheme.colorScheme.onSurface
         val playStoreInstalled = context.isPlayStoreInstalled()
         val ruStoreInstalled = context.isRuStoreInstalled()
-
-        System.out.printf("MOPPE AboutScreen launch")
         Column(Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp, bottom = 26.dp)) {
             ListItem(
                 modifier = Modifier
@@ -174,9 +172,7 @@ internal fun AboutNewSection(
                 }
                 Spacer(modifier = Modifier.size(18.dp))
             }
-
             Card(
-
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
@@ -315,7 +311,6 @@ internal fun AboutNewSection(
                     }
                 }
             }
-
             if (showGithub) {
                 Spacer(modifier = Modifier.size(18.dp))
                 Card(
@@ -365,7 +360,6 @@ internal fun AboutNewSection(
 
 @Composable
 fun HtmlText(html: String, modifier: Modifier = Modifier, textColor: Color = Color.Unspecified) {
-
     AndroidView(
         modifier = modifier.padding(horizontal = 4.dp),
         factory = { context -> TextView(context).apply {
@@ -373,5 +367,4 @@ fun HtmlText(html: String, modifier: Modifier = Modifier, textColor: Color = Col
         } },
         update = { it.text = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_COMPACT) }
     )
-
 }

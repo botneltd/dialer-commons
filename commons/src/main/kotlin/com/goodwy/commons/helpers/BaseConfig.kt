@@ -336,6 +336,8 @@ open class BaseConfig(val context: Context) {
         get() = prefs.getBoolean(USE_24_HOUR_FORMAT, DateFormat.is24HourFormat(context))
         set(use24HourFormat) = prefs.edit { putBoolean(USE_24_HOUR_FORMAT, use24HourFormat) }
 
+    val isUse24HourFormat: Flow<Boolean> = ::use24HourFormat.asFlowNonNull()
+
     var isSundayFirst: Boolean
         get() {
             val isSundayFirst = Calendar.getInstance(Locale.getDefault()).firstDayOfWeek == Calendar.SUNDAY
@@ -417,6 +419,8 @@ open class BaseConfig(val context: Context) {
         get() = prefs.getString(DATE_FORMAT, getDefaultDateFormat())!!
         set(dateFormat) = prefs.edit { putString(DATE_FORMAT, dateFormat) }
 
+    val isDateFormat: Flow<String> = ::dateFormat.asFlowNonNull()
+
     private fun getDefaultDateFormat(): String {
         val format = DateFormat.getDateFormat(context)
         val pattern = (format as SimpleDateFormat).toLocalizedPattern()
@@ -484,7 +488,7 @@ open class BaseConfig(val context: Context) {
 
     var fontSize: Int
         get() = prefs.getInt(FONT_SIZE, 1) //context.resources.getInteger(R.integer.default_font_size)
-        set(size) = prefs.edit { putInt(FONT_SIZE, size) }
+        set(fontSize) = prefs.edit { putInt(FONT_SIZE, fontSize) }
 
     // notify the users about new SMS Messenger and Voice Recorder released
     var wasMessengerRecorderShown: Boolean
@@ -803,6 +807,26 @@ open class BaseConfig(val context: Context) {
     var changeColourTopBar: Boolean
         get() = prefs.getBoolean(CHANGE_COLOUR_TOP_BAR, true)
         set(changeColourTopBar) = prefs.edit { putBoolean(CHANGE_COLOUR_TOP_BAR, changeColourTopBar) }
+
+    var useShamsi: Boolean //Persian Calendar
+        get() = prefs.getBoolean(USE_SHAMSI, false)
+        set(useShamsi) = prefs.edit { putBoolean(USE_SHAMSI, useShamsi) }
+
+    val isUseShamsi: Flow<Boolean> = ::useShamsi.asFlowNonNull()
+
+    var needInit: Boolean
+        get() = prefs.getBoolean(NEED_INIT, true)
+        set(needInit) = prefs.edit { putBoolean(NEED_INIT, needInit) }
+
+    var isMiui: Boolean
+        get() = prefs.getBoolean(IS_MIUI, false)
+        set(isMiui) = prefs.edit { putBoolean(IS_MIUI, isMiui) }
+
+    var blockingType: Int
+        get() = prefs.getInt(BLOCKING_TYPE, BLOCKING_TYPE_REJECT)
+        set(blockingType) = prefs.edit { putInt(BLOCKING_TYPE, blockingType) }
+
+    val isBlockingType: Flow<Int> = ::blockingType.asFlowNonNull()
 }
 
 

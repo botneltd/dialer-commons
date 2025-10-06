@@ -8,7 +8,15 @@ import android.app.Application
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.role.RoleManager
-import android.content.*
+import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.ContentResolver
+import android.content.ContentUris
+import android.content.ContentValues
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.content.pm.ShortcutManager
@@ -19,12 +27,20 @@ import android.graphics.Point
 import android.media.MediaMetadataRetriever
 import android.media.RingtoneManager
 import android.net.Uri
-import android.os.*
+import android.os.Build
+import android.os.Bundle
+import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.provider.BaseColumns
 import android.provider.BlockedNumberContract.BlockedNumbers
 import android.provider.ContactsContract.CommonDataKinds.*
 import android.provider.DocumentsContract
-import android.provider.MediaStore.*
+import android.provider.MediaStore.Audio
+import android.provider.MediaStore.Files
+import android.provider.MediaStore.Images
+import android.provider.MediaStore.MediaColumns
+import android.provider.MediaStore.Video
 import android.provider.OpenableColumns
 import android.provider.Settings
 import android.telecom.TelecomManager
@@ -62,7 +78,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import androidx.core.net.toUri
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.joda.time.DateTimeConstants
+import java.util.concurrent.TimeUnit
 
 fun Context.getSharedPrefs() = getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
 
@@ -245,7 +264,7 @@ private fun isDownloadsDocument(uri: Uri) = uri.authority == "com.android.provid
 
 private fun isExternalStorageDocument(uri: Uri) = uri.authority == "com.android.externalstorage.documents"
 
-fun Context.hasPermission(permId: Int) = ContextCompat.checkSelfPermission(this, getPermissionString(permId)) == PackageManager.PERMISSION_GRANTED
+fun Context.hasPermission(permId: Int) = ContextCompat.checkSelfPermission(this, getPermissionString(permId)) == PERMISSION_GRANTED
 
 fun Context.hasAllPermissions(permIds: Collection<Int>) = permIds.all(this::hasPermission)
 
@@ -504,24 +523,21 @@ fun Context.canAccessGlobalConfig(): Boolean {
     return isPro() && ContextCompat.checkSelfPermission(this, PERMISSION_WRITE_GLOBAL_SETTINGS) == PERMISSION_GRANTED
 }
 
-fun Context.isOrWasThankYouInstalled(): Boolean {
+fun Context.isOrWasThankYouInstalled(allowPretend: Boolean = true): Boolean {
     return when {
-        resources.getBoolean(R.bool.pretend_thank_you_installed) -> true
-        isPackageInstalled("com.goodwy.audiobook") -> true
-        isPackageInstalled("com.goodwy.voicerecorder") -> true
-        isPackageInstalled("com.goodwy.files") -> true
+        isPackageInstalled("com.goodwy.audiobook")
+            || isPackageInstalled("com.goodwy.voicerecorder")
+            || isPackageInstalled("com.goodwy.files") -> {
+            if (!baseConfig.hadThankYouInstalled) {
+                baseConfig.hadThankYouInstalled = true
+            }
+            true
+        }
+
+        baseConfig.hadThankYouInstalled -> true
+        resources.getBoolean(R.bool.pretend_thank_you_installed) && allowPretend -> true
         else -> false
     }
-}
-
-fun Context.getCustomizeColorsString(): String {
-    val textId = if (isOrWasThankYouInstalled()) {
-        R.string.customize_colors
-    } else {
-        R.string.customize_colors_locked
-    }
-
-    return getString(textId)
 }
 
 fun PackageManager.isAppInstalled(packageName: String): Boolean =
@@ -734,21 +750,22 @@ fun Context.storeNewYourAlarmSound(resultData: Intent): AlarmSound {
     return newAlarmSound
 }
 
-@RequiresApi(Build.VERSION_CODES.N)
 fun Context.saveImageRotation(path: String, degrees: Int): Boolean {
-    if (!needsStupidWritePermissions(path)) {
+    return if (!needsStupidWritePermissions(path)) {
         saveExifRotation(ExifInterface(path), degrees)
-        return true
-    } else if (isNougatPlus()) {
+        true
+    } else {
         val documentFile = getSomeDocumentFile(path)
         if (documentFile != null) {
-            val parcelFileDescriptor = contentResolver.openFileDescriptor(documentFile.uri, "rw")
+            val parcelFileDescriptor =
+                contentResolver.openFileDescriptor(documentFile.uri, "rw")
             val fileDescriptor = parcelFileDescriptor!!.fileDescriptor
             saveExifRotation(ExifInterface(fileDescriptor), degrees)
-            return true
+            true
+        } else {
+            false
         }
     }
-    return false
 }
 
 fun Context.saveExifRotation(exif: ExifInterface, degrees: Int) {
@@ -1063,9 +1080,9 @@ fun Context.isUsingGestureNavigation(): Boolean {
 
 // we need the Default Dialer functionality only in Simple Dialer and in Simple Contacts for now
 fun Context.isDefaultDialer(): Boolean {
-    return if (!packageName.startsWith("com.goodwy.contacts") && !packageName.startsWith("com.sorwi.aidialer")) {
+    return if (!packageName.startsWith("com.goodwy.contacts") && !packageName.startsWith("com.goodwy.dialer")) {
         true
-    } else if ((packageName.startsWith("com.goodwy.contacts") || packageName.startsWith("com.sorwi.aidialer")) && isQPlus()) {
+    } else if ((packageName.startsWith("com.goodwy.contacts") || packageName.startsWith("com.goodwy.dialer")) && isQPlus()) {
         val roleManager = getSystemService(RoleManager::class.java)
         roleManager!!.isRoleAvailable(RoleManager.ROLE_DIALER) && roleManager.isRoleHeld(RoleManager.ROLE_DIALER)
     } else {
@@ -1335,6 +1352,12 @@ fun Context.getDayOfWeekString(dayOfWeek: Int): String {
     return getString(dayOfWeekResId)
 }
 
+fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
 //Goodwy
 fun Context.getEmailTypeText(type: Int, label: String): String {
     return if (type == BaseTypes.TYPE_CUSTOM) {
@@ -1477,20 +1500,25 @@ fun Context.getLetterBackgroundColors(): ArrayList<Long> {
     }
 }
 
-fun isMiUi(): Boolean {
+suspend fun isMiUi(): Boolean {
     return !TextUtils.isEmpty(getSystemProperty("ro.miui.ui.version.name"))
 }
 
-fun getSystemProperty(propName: String): String? {
+suspend fun getSystemProperty(propName: String): String? = withContext(Dispatchers.IO) {
     val line: String
     var input: BufferedReader? = null
     try {
-        val p = Runtime.getRuntime().exec("getprop $propName")
-        input = BufferedReader(InputStreamReader(p.inputStream), 1024)
+        val process = Runtime.getRuntime().exec("getprop $propName")
+        // Add a timeout to avoid freezes
+        if (!process.waitFor(3, TimeUnit.SECONDS)) {
+            process.destroy()
+            return@withContext null
+        }
+        input = BufferedReader(InputStreamReader(process.inputStream), 1024)
         line = input.readLine()
         input.close()
     } catch (ex: IOException) {
-        return null
+        return@withContext null
     } finally {
         if (input != null) {
             try {
@@ -1500,7 +1528,7 @@ fun getSystemProperty(propName: String): String? {
             }
         }
     }
-    return line
+    return@withContext line
 }
 
 fun Context.isPlayStoreInstalled(): Boolean {
@@ -1516,7 +1544,7 @@ fun Context.isPro() = baseConfig.isPro || baseConfig.isProSubs || baseConfig.isP
     (resources.getBoolean(R.bool.using_no_gp) && baseConfig.isProNoGP)
 
 fun Context.isCollection(): Boolean {
-    return isPackageInstalled("com.sorwi.aidialer")
+    return isPackageInstalled("com.goodwy.dialer")
         && isPackageInstalled("com.goodwy.contacts")
         && isPackageInstalled("com.goodwy.smsmessenger")
         && isPackageInstalled("com.goodwy.gallery")

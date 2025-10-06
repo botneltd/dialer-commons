@@ -44,6 +44,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.get
 import androidx.core.view.size
 import androidx.core.widget.NestedScrollView
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.goodwy.commons.R
 import com.goodwy.commons.asynctasks.CopyMoveTask
@@ -56,6 +57,7 @@ import com.goodwy.commons.models.FAQItem
 import com.goodwy.commons.models.FileDirItem
 import com.goodwy.commons.views.MySearchMenu
 import com.google.android.material.appbar.AppBarLayout
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.OutputStream
 import java.util.regex.Pattern
@@ -126,6 +128,16 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
         }
 // Pepron change END
 */
+
+        if (baseConfig.needInit) {
+            lifecycleScope.launch {
+                val miuiCheckJob = launch {
+                    baseConfig.isMiui = isMiUi()
+                }
+                miuiCheckJob.join()
+                baseConfig.needInit = false
+            }
+        }
     }
 
     @SuppressLint("NewApi")
@@ -263,47 +275,47 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
     }
 
     // colorize the top toolbar and statusbar at scrolling down a bit
-    fun setupMaterialScrollListener(scrollingView: ScrollingView?, toolbar: Toolbar) {
+    fun setupMaterialScrollListener(scrollingView: ScrollingView?, toolbar: Toolbar, surfaceColor: Boolean = false) {
         this.scrollingView = scrollingView
         this.toolbar = toolbar
         if (scrollingView is RecyclerView) {
             scrollingView.setOnScrollChangeListener { _, _, _, _, _ ->
                 val newScrollY = scrollingView.computeVerticalScrollOffset()
-                if (newScrollY == 0 || currentScrollY == 0) scrollingChanged(newScrollY, currentScrollY)
+                if (newScrollY == 0 || currentScrollY == 0) scrollingChanged(newScrollY, currentScrollY, surfaceColor = surfaceColor)
                 currentScrollY = newScrollY
             }
         } else if (scrollingView is NestedScrollView) {
             scrollingView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
-                if (scrollY == 0 || oldScrollY == 0) scrollingChanged(scrollY, oldScrollY)
+                if (scrollY == 0 || oldScrollY == 0) scrollingChanged(scrollY, oldScrollY, surfaceColor = surfaceColor)
             }
         }
     }
 
-    fun setupSearchMenuScrollListener(scrollingView: ScrollingView?, searchMenu: MySearchMenu) {
+    fun setupSearchMenuScrollListener(scrollingView: ScrollingView?, searchMenu: MySearchMenu, surfaceColor: Boolean = false) {
         this.scrollingView = scrollingView
         this.mySearchMenu = searchMenu
         if (scrollingView is RecyclerView) {
             scrollingView.setOnScrollChangeListener { _, _, _, _, _ ->
                 val newScrollY = scrollingView.computeVerticalScrollOffset()
-                if (newScrollY == 0 || currentScrollY == 0) scrollingChanged(newScrollY, currentScrollY, true)
+                if (newScrollY == 0 || currentScrollY == 0) scrollingChanged(newScrollY, currentScrollY, true, surfaceColor)
                 currentScrollY = newScrollY
             }
         } else if (scrollingView is NestedScrollView) {
             scrollingView.setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
-                if (scrollY == 0 || oldScrollY == 0) scrollingChanged(scrollY, oldScrollY, true)
+                if (scrollY == 0 || oldScrollY == 0) scrollingChanged(scrollY, oldScrollY, true, surfaceColor)
             }
         }
     }
 
-    private fun scrollingChanged(newScrollY: Int, oldScrollY: Int, isMySearchMenu: Boolean = false) {
+    private fun scrollingChanged(newScrollY: Int, oldScrollY: Int, isMySearchMenu: Boolean = false, surfaceColor: Boolean) {
         if (newScrollY > 0 && oldScrollY == 0) {
-            val colorFrom = window.statusBarColor
+            val colorFrom = if (surfaceColor) getSurfaceColor() else getProperBackgroundColor()
             val colorTo = getColoredMaterialStatusBarColor()
             if (isMySearchMenu) animateMySearchMenuColors(colorFrom, colorTo)
             else  animateTopBarColors(colorFrom, colorTo)
         } else if (newScrollY == 0 && oldScrollY > 0) {
-            val colorFrom = window.statusBarColor
-            val colorTo = getRequiredStatusBarColor()
+            val colorFrom = if (surfaceColor) getSurfaceColor() else getProperBackgroundColor()
+            val colorTo = getRequiredStatusBarColor(surfaceColor)
             if (isMySearchMenu) animateMySearchMenuColors(colorFrom, colorTo)
             else animateTopBarColors(colorFrom, colorTo)
         }
@@ -343,10 +355,10 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
         materialScrollColorAnimation!!.start()
     }
 
-    fun getRequiredStatusBarColor(): Int {
+    fun getRequiredStatusBarColor(surfaceColor: Boolean = false): Int {
         val scrollingViewOffset = scrollingView?.computeVerticalScrollOffset() ?: 0
         return if ((scrollingView is RecyclerView || scrollingView is NestedScrollView) && scrollingViewOffset == 0) {
-            getProperBackgroundColor()
+            if (surfaceColor) getSurfaceColor() else getProperBackgroundColor()
         } else {
             getColoredMaterialStatusBarColor()
         }
@@ -381,19 +393,19 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
         for (i in 0 until menu.size) {
             try {
                 menu[i].icon?.setTint(itemColor)
-            } catch (ignored: Exception) {
+            } catch (_: Exception) {
             }
         }
     }
 
-    fun updateStatusBarOnPageChange() {
+    fun updateStatusBarOnPageChange(surfaceColor: Boolean = false) {
         if (scrollingView is RecyclerView || scrollingView is NestedScrollView) {
             val scrollY = scrollingView!!.computeVerticalScrollOffset()
             val colorFrom = window.statusBarColor
             val colorTo = if (scrollY > 0) {
                 getColoredMaterialStatusBarColor()
             } else {
-                getRequiredStatusBarColor()
+                if (surfaceColor) getSurfaceColor() else getRequiredStatusBarColor()
             }
             animateTopBarColors(colorFrom, colorTo)
             currentScrollY = scrollY
@@ -493,7 +505,7 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
         for (i in 0 until menu.size) {
             try {
                 menu[i].icon?.setTint(color)
-            } catch (ignored: Exception) {
+            } catch (_: Exception) {
             }
         }
 
@@ -520,14 +532,14 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, resultData)
         val partition = try {
             checkedDocumentPath.substring(9, 18)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             ""
         }
 
         val sdOtgPattern = Pattern.compile(SD_OTG_SHORT)
 
         if (requestCode == CREATE_DOCUMENT_SDK_30) {
-            if (resultCode == Activity.RESULT_OK && resultData != null && resultData.data != null) {
+            if (resultCode == RESULT_OK && resultData != null && resultData.data != null) {
 
                 val treeUri = resultData.data
                 val checkedUri = buildDocumentUriSdk30(checkedDocumentPath)
@@ -547,7 +559,7 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
             }
 
         } else if (requestCode == OPEN_DOCUMENT_TREE_FOR_SDK_30) {
-            if (resultCode == Activity.RESULT_OK && resultData != null && resultData.data != null) {
+            if (resultCode == RESULT_OK && resultData != null && resultData.data != null) {
                 val treeUri = resultData.data
                 val checkedUri = createFirstParentTreeUri(checkedDocumentPath)
 
@@ -568,7 +580,7 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
             }
 
         } else if (requestCode == OPEN_DOCUMENT_TREE_FOR_ANDROID_DATA_OR_OBB) {
-            if (resultCode == Activity.RESULT_OK && resultData != null && resultData.data != null) {
+            if (resultCode == RESULT_OK && resultData != null && resultData.data != null) {
                 if (isProperAndroidRoot(checkedDocumentPath, resultData.data!!)) {
                     if (resultData.dataString == baseConfig.OTGTreeUri || resultData.dataString == baseConfig.sdTreeUri) {
                         val pathToSelect = createAndroidDataOrObbPath(checkedDocumentPath)
@@ -601,7 +613,7 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
                 funAfterSAFPermission?.invoke(false)
             }
         } else if (requestCode == OPEN_DOCUMENT_TREE_SD) {
-            if (resultCode == Activity.RESULT_OK && resultData != null && resultData.data != null) {
+            if (resultCode == RESULT_OK && resultData != null && resultData.data != null) {
                 val isProperPartition = partition.isEmpty() || !sdOtgPattern.matcher(partition).matches() || (sdOtgPattern.matcher(partition)
                     .matches() && resultData.dataString!!.contains(partition))
                 if (isProperSDRootFolder(resultData.data!!) && isProperPartition) {
@@ -627,7 +639,7 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
                 funAfterSAFPermission?.invoke(false)
             }
         } else if (requestCode == OPEN_DOCUMENT_TREE_OTG) {
-            if (resultCode == Activity.RESULT_OK && resultData != null && resultData.data != null) {
+            if (resultCode == RESULT_OK && resultData != null && resultData.data != null) {
                 val isProperPartition = partition.isEmpty() || !sdOtgPattern.matcher(partition).matches() || (sdOtgPattern.matcher(partition)
                     .matches() && resultData.dataString!!.contains(partition))
                 if (isProperOTGRootFolder(resultData.data!!) && isProperPartition) {
@@ -658,20 +670,20 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
             } else {
                 funAfterSAFPermission?.invoke(false)
             }
-        } else if (requestCode == SELECT_EXPORT_SETTINGS_FILE_INTENT && resultCode == Activity.RESULT_OK && resultData != null && resultData.data != null) {
+        } else if (requestCode == SELECT_EXPORT_SETTINGS_FILE_INTENT && resultCode == RESULT_OK && resultData != null && resultData.data != null) {
             val outputStream = contentResolver.openOutputStream(resultData.data!!)
             exportSettingsTo(outputStream, configItemsToExport)
         } else if (requestCode == DELETE_FILE_SDK_30_HANDLER) {
-            funAfterSdk30Action?.invoke(resultCode == Activity.RESULT_OK)
+            funAfterSdk30Action?.invoke(resultCode == RESULT_OK)
         } else if (requestCode == RECOVERABLE_SECURITY_HANDLER) {
-            funRecoverableSecurity?.invoke(resultCode == Activity.RESULT_OK)
+            funRecoverableSecurity?.invoke(resultCode == RESULT_OK)
             funRecoverableSecurity = null
         } else if (requestCode == UPDATE_FILE_SDK_30_HANDLER) {
-            funAfterUpdate30File?.invoke(resultCode == Activity.RESULT_OK)
+            funAfterUpdate30File?.invoke(resultCode == RESULT_OK)
         } else if (requestCode == MANAGE_MEDIA_RC) {
             funAfterManageMediaPermission?.invoke()
         } else if (requestCode == TRASH_FILE_SDK_30_HANDLER) {
-            funAfterTrash30File?.invoke(resultCode == Activity.RESULT_OK)
+            funAfterTrash30File?.invoke(resultCode == RESULT_OK)
         }
     }
 
@@ -808,7 +820,6 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun launchCustomizeNotificationsIntent() {
         Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
             putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
@@ -823,7 +834,7 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
                 data = Uri.fromParts("package", packageName, null)
                 startActivity(this)
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             openDeviceSettings()
         }
     }
@@ -908,15 +919,15 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
                 try {
                     startActivityForResult(this, OPEN_DOCUMENT_TREE_OTG)
                     return@apply
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     type = "*/*"
                 }
 
                 try {
                     startActivityForResult(this, OPEN_DOCUMENT_TREE_OTG)
-                } catch (e: ActivityNotFoundException) {
+                } catch (_: ActivityNotFoundException) {
                     toast(R.string.system_service_disabled, Toast.LENGTH_LONG)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     toast(R.string.unknown_error_occurred)
                 }
             }
@@ -1127,7 +1138,7 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
             val newName = String.format("%s(%d).%s", file.nameWithoutExtension, fileIndex, file.extension)
             newFile = File(file.parent, newName)
             fileIndex++
-        } while (getDoesFilePathExist(newFile!!.absolutePath))
+        } while (getDoesFilePathExist(newFile.absolutePath))
         return newFile
     }
 
@@ -1357,7 +1368,7 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
 
                 try {
                     startActivityForResult(this, SELECT_EXPORT_SETTINGS_FILE_INTENT)
-                } catch (e: ActivityNotFoundException) {
+                } catch (_: ActivityNotFoundException) {
                     toast(R.string.system_service_disabled, Toast.LENGTH_LONG)
                 } catch (e: Exception) {
                     showErrorToast(e)
@@ -1387,7 +1398,7 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
     }
 
     private fun getExportSettingsFilename(): String {
-        val appName = baseConfig.appId.removeSuffix(".debug").removeSuffix(".pro").removePrefix("org.fossify.")
+        val appName = baseConfig.appId.removeSuffix(".debug").removeSuffix(".pro").removePrefix("com.goodwy.")
         return "$appName-settings_${getCurrentFormattedDateTime()}"
     }
 
@@ -1403,7 +1414,7 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
             Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER).putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME, packageName).apply {
                 try {
                     startActivityForResult(this, REQUEST_CODE_SET_DEFAULT_DIALER)
-                } catch (e: ActivityNotFoundException) {
+                } catch (_: ActivityNotFoundException) {
                     toast(R.string.no_app_found)
                 } catch (e: Exception) {
                     showErrorToast(e)

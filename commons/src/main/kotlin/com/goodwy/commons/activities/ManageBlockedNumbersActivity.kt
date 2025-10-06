@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
@@ -22,9 +23,11 @@ import com.goodwy.commons.compose.screens.ManageBlockedNumbersScreen
 import com.goodwy.commons.compose.theme.AppThemeSurface
 import com.goodwy.commons.dialogs.AddOrEditBlockedNumberAlertDialog
 import com.goodwy.commons.dialogs.ExportBlockedNumbersDialog
+import com.goodwy.commons.dialogs.RadioGroupAlertDialog
 import com.goodwy.commons.extensions.*
 import com.goodwy.commons.helpers.*
 import com.goodwy.commons.models.BlockedNumber
+import com.goodwy.commons.models.RadioItem
 import java.io.FileOutputStream
 import java.io.OutputStream
 import kotlinx.collections.immutable.ImmutableList
@@ -37,6 +40,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class ManageBlockedNumbersActivity : BaseSimpleActivity() {
+    companion object {
+        const val SET_DEFAULT_CALLER_ID = "SET_DEFAULT_CALLER_ID"
+    }
 
     private val config by lazy { baseConfig }
 
@@ -74,6 +80,11 @@ class ManageBlockedNumbersActivity : BaseSimpleActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (intent.action == SET_DEFAULT_CALLER_ID) {
+            maybeSetDefaultCallerIdApp()
+        }
+
         enableEdgeToEdgeSimple()
         setContent {
             val context = LocalContext.current
@@ -88,8 +99,9 @@ class ManageBlockedNumbersActivity : BaseSimpleActivity() {
             val showCheckmarksOnSwitches by config.showCheckmarksOnSwitchesFlow.collectAsStateWithLifecycle(initialValue = config.showCheckmarksOnSwitches)
             val isTopAppBarColorIcon by config.isTopAppBarColorIcon.collectAsStateWithLifecycle(initialValue = config.topAppBarColorIcon)
             val isTopAppBarColorTitle by config.isTopAppBarColorTitle.collectAsStateWithLifecycle(initialValue = config.topAppBarColorTitle)
+            val isBlockingType by config.isBlockingType.collectAsStateWithLifecycle(initialValue = config.blockingType)
             val isDialer = remember {
-                config.appId.startsWith("com.sorwi.aidialer")
+                config.appId.startsWith("com.goodwy.dialer")
             }
             val isDefaultDialer: Boolean = onEventValue {
                 context.isDefaultDialer()
@@ -111,6 +123,31 @@ class ManageBlockedNumbersActivity : BaseSimpleActivity() {
                         addBlockedNumber(blockedNumber)
                         clickedBlockedNumber = null
                         updateBlockedNumbers()
+                    }
+                }
+
+                val blockingTypeDialogState = rememberAlertDialogState()
+
+                blockingTypeDialogState.DialogMember {
+                    RadioGroupAlertDialog(
+                        alertDialogState = blockingTypeDialogState,
+                        items = if (isQPlus()) {
+                            listOf(
+                                RadioItem(BLOCKING_TYPE_REJECT, stringResource(id = com.goodwy.strings.R.string.blocking_type_reject)),
+                                RadioItem(BLOCKING_TYPE_DO_NOT_REJECT, stringResource(id = com.goodwy.strings.R.string.blocking_type_do_not_reject)),
+                                RadioItem(BLOCKING_TYPE_SILENCE, stringResource(id = com.goodwy.strings.R.string.blocking_type_silence)),
+                            ).toImmutableList()
+                        } else {
+                            listOf(
+                                RadioItem(BLOCKING_TYPE_REJECT, stringResource(id = com.goodwy.strings.R.string.blocking_type_reject)),
+                                RadioItem(BLOCKING_TYPE_DO_NOT_REJECT, stringResource(id = com.goodwy.strings.R.string.blocking_type_do_not_reject)),
+                            ).toImmutableList()
+                        },
+                        selectedItemId = isBlockingType,
+                        titleId = com.goodwy.strings.R.string.blocking_type,
+                        cancelCallback = {}
+                    ) { item ->
+                        config.blockingType = item.toInt()
                     }
                 }
 
@@ -148,6 +185,10 @@ class ManageBlockedNumbersActivity : BaseSimpleActivity() {
                     },
                     onCopy = { blockedNumber ->
                         copyToClipboard(blockedNumber.number)
+                    },
+                    isBlockingType= isBlockingType,
+                    onBlockingType = {
+                        blockingTypeDialogState.show()
                     },
                 )
             }
@@ -224,7 +265,7 @@ class ManageBlockedNumbersActivity : BaseSimpleActivity() {
     }
 
     private fun maybeSetDefaultCallerIdApp() {
-        if (isQPlus() && baseConfig.appId.startsWith("com.sorwi.aidialer")) {
+        if (isQPlus() && baseConfig.appId.startsWith("com.goodwy.dialer")) {
             setDefaultCallerIdApp()
         }
     }
@@ -240,6 +281,11 @@ class ManageBlockedNumbersActivity : BaseSimpleActivity() {
                 toast(R.string.must_make_default_caller_id_app, length = Toast.LENGTH_LONG)
                 baseConfig.blockUnknownNumbers = false
                 baseConfig.blockHiddenNumbers = false
+                intent.action = null
+            }
+
+            intent.action == SET_DEFAULT_CALLER_ID && resultCode == RESULT_OK -> {
+                baseConfig.blockUnknownNumbers = true
             }
         }
     }
