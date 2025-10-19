@@ -149,7 +149,7 @@
     <string name="hide_blocked_numbers">Ezkutatu blokeatuta</string>
     <string name="paste_g">Txertatu</string>
     <string name="recents">Azken aldiak</string>
-    <string name="unblock_confirmation">Ziur \"% s\" desblokeatu nahi duzula?</string>
+    <string name="unblock_confirmation">Ziur "%s" desblokeatu nahi duzula?</string>
 
     <!-- Other -->
     <string name="contact_thumbnails_size">Harremanetarako irudi txikien tamaina</string>

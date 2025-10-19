@@ -150,7 +150,7 @@ class CustomizationActivity : BaseSimpleActivity() {
         setupUseAccentColor()
     }
 
-    private fun updateHoldersColor(color: Int = getBottomNavigationBackgroundColor()) {
+    private fun updateHoldersColor(color: Int = getSurfaceColor()) {
         arrayOf(
             binding.themeHolder,
             binding.primaryColorsHolder,
@@ -970,109 +970,104 @@ class CustomizationActivity : BaseSimpleActivity() {
     }
 
     private fun setupPurchaseThankYou() {
-        binding.settingsPurchaseThankYou.setTextColor(getProperTextColor())
-        binding.aboutAppVersion.setTextColor(getProperTextColor())
-        binding.settingsPurchaseThankYouHolder.beGoneIf(isProVersion())
-        binding.settingsPurchaseThankYouHolder.setOnClickListener {
-            launchPurchase()
-        }
-        binding.moreButton.setOnClickListener {
-            launchPurchase()
-        }
-        val appDrawable = resources.getColoredDrawableWithColor(this, R.drawable.ic_plus_support, getProperPrimaryColor())
-        binding.purchaseLogo.setImageDrawable(appDrawable)
-        val drawable = resources.getColoredDrawableWithColor(this, R.drawable.button_gray_bg, getProperPrimaryColor())
-        binding.moreButton.background = drawable
-        binding.moreButton.setTextColor(getProperBackgroundColor())
-        binding.moreButton.setPadding(2,2,2,2)
-    }
+/* Pepron change start
+binding.settingsPurchaseThankYouHolder.beGoneIf(isProVersion())
+binding.settingsPurchaseThankYouHolder.onClick = { launchPurchase() }
+Pepron change END */
+}
 
-    private fun launchPurchase() {
-        startPurchaseActivity(
-            stringsR.string.app_name_g,
-            getProductIdList(), getProductIdListRu(),
-            getSubscriptionIdList(), getSubscriptionIdListRu(),
-            getSubscriptionYearIdList(), getSubscriptionYearIdListRu(),
-            playStoreInstalled = playStoreInstalled(),
-            ruStoreInstalled = ruStoreInstalled())
-    }
 
-    private fun shakePurchase() {
-        RxAnimation.from(binding.settingsPurchaseThankYouHolder)
-            .shake()
-            .subscribe()
-    }
+private fun launchPurchase() {
+/* Pepron change start
+startPurchaseActivity(
+stringsR.string.app_name_g,
+getProductIdList(), getProductIdListRu(),
+getSubscriptionIdList(), getSubscriptionIdListRu(),
+getSubscriptionYearIdList(), getSubscriptionYearIdListRu(),
+playStoreInstalled = playStoreInstalled(),
+ruStoreInstalled = ruStoreInstalled())
+Pepron change END */
+}
 
-    private fun setupTopAppBarColorIcon() {
-        binding.apply {
-            updateTextColors(settingsTopAppBarColorIconHolder)
-            settingsTopAppBarColorIcon.isChecked = baseConfig.topAppBarColorIcon
-            settingsTopAppBarColorIconHolder.setOnClickListener {
-                settingsTopAppBarColorIcon.toggle()
-                curTopAppBarColorIcon = settingsTopAppBarColorIcon.isChecked
-                colorChanged()
-                updateTopBarColors()
-            }
-        }
-    }
+private fun shakePurchase() {
+/* Pepron change start
+RxAnimation.from(binding.settingsPurchaseThankYouHolder)
+.shake()
+.subscribe()
 
-    private fun setupTopAppBarColorTitle() {
-        binding.apply {
-            updateTextColors(settingsTopAppBarColorTitleHolder)
-            settingsTopAppBarColorTitle.isChecked = baseConfig.topAppBarColorTitle
-            settingsTopAppBarColorTitleHolder.setOnClickListener {
-                settingsTopAppBarColorTitle.toggle()
-                curTopAppBarColorTitle = settingsTopAppBarColorTitle.isChecked
-                colorChanged()
-                updateTopBarColors()
-            }
-        }
-    }
+Pepron change END */
+}
 
-    private fun updateTopBarColors() {
-        updateTopBarColors(
-            toolbar = binding.customizationToolbar,
-            colorBackground = getCurrentBackgroundColor(),
-            colorPrimary = getCurrentPrimaryColor(),
-            topAppBarColorIcon = curTopAppBarColorIcon,
-            topAppBarColorTitle = curTopAppBarColorTitle
-        )
-    }
+private fun setupTopAppBarColorIcon() {
+binding.apply {
+updateTextColors(settingsTopAppBarColorIconHolder)
+settingsTopAppBarColorIcon.isChecked = baseConfig.topAppBarColorIcon
+settingsTopAppBarColorIconHolder.setOnClickListener {
+settingsTopAppBarColorIcon.toggle()
+curTopAppBarColorIcon = settingsTopAppBarColorIcon.isChecked
+colorChanged()
+updateTopBarColors()
+}
+}
+}
 
-    private fun setupUseAccentColor() {
-        binding.apply {
-            customizationUseAccentColorHolder.beVisibleIf(getShowAccentColor())
-            updateTextColors(customizationUseAccentColorHolder)
-            customizationUseAccentColor.isChecked = baseConfig.isUsingAccentColor
-            customizationUseAccentColorHolder.setOnClickListener {
-                customizationUseAccentColor.toggle()
-                curIsUsingAccentColor = customizationUseAccentColor.isChecked
-                colorChanged()
-                updateAutoThemeFields()
-            }
-            customizationUseAccentColorFaq.imageTintList = ColorStateList.valueOf(getProperTextColor())
-            customizationUseAccentColorFaq.setOnClickListener {
-                ConfirmationDialog(this@CustomizationActivity, messageId = com.goodwy.strings.R.string.use_accent_color_summary, positive = com.goodwy.commons.R.string.ok, negative = 0) {}
-            }
-        }
-    }
+private fun setupTopAppBarColorTitle() {
+binding.apply {
+updateTextColors(settingsTopAppBarColorTitleHolder)
+settingsTopAppBarColorTitle.isChecked = baseConfig.topAppBarColorTitle
+settingsTopAppBarColorTitleHolder.setOnClickListener {
+settingsTopAppBarColorTitle.toggle()
+curTopAppBarColorTitle = settingsTopAppBarColorTitle.isChecked
+colorChanged()
+updateTopBarColors()
+}
+}
+}
 
-    private fun showSnackbar(view: View) {
-        view.performHapticFeedback()
+private fun updateTopBarColors() {
+updateTopBarColors(
+toolbar = binding.customizationToolbar,
+colorBackground = getCurrentBackgroundColor(),
+colorPrimary = getCurrentPrimaryColor(),
+topAppBarColorIcon = curTopAppBarColorIcon,
+topAppBarColorTitle = curTopAppBarColorTitle
+)
+}
 
-        val snackbar = Snackbar.make(view, stringsR.string.support_project_to_unlock, Snackbar.LENGTH_SHORT)
-            .setAction(R.string.support) {
-                launchPurchase()
-            }
+private fun setupUseAccentColor() {
+binding.apply {
+customizationUseAccentColorHolder.beVisibleIf(getShowAccentColor())
+updateTextColors(customizationUseAccentColorHolder)
+customizationUseAccentColor.isChecked = baseConfig.isUsingAccentColor
+customizationUseAccentColorHolder.setOnClickListener {
+customizationUseAccentColor.toggle()
+curIsUsingAccentColor = customizationUseAccentColor.isChecked
+colorChanged()
+updateAutoThemeFields()
+}
+customizationUseAccentColorFaq.imageTintList = ColorStateList.valueOf(getProperTextColor())
+customizationUseAccentColorFaq.setOnClickListener {
+ConfirmationDialog(this@CustomizationActivity, messageId = com.goodwy.strings.R.string.use_accent_color_summary, positive = com.goodwy.commons.R.string.ok, negative = 0) {}
+}
+}
+}
 
-        val bgDrawable = ResourcesCompat.getDrawable(view.resources, R.drawable.button_background_16dp, null)
-        snackbar.view.background = bgDrawable
-        val properBackgroundColor = getProperBackgroundColor()
-        val backgroundColor = if (properBackgroundColor == Color.BLACK) getBottomNavigationBackgroundColor().lightenColor(6) else getBottomNavigationBackgroundColor().darkenColor(6)
-        snackbar.setBackgroundTint(backgroundColor)
-        snackbar.setTextColor(getProperTextColor())
-        snackbar.setActionTextColor(getProperPrimaryColor())
-        snackbar.show()
-    }
+private fun showSnackbar(view: View) {
+view.performHapticFeedback()
+
+val snackbar = Snackbar.make(view, stringsR.string.support_project_to_unlock, Snackbar.LENGTH_SHORT)
+.setAction(R.string.support) {
+launchPurchase()
+}
+
+val bgDrawable = ResourcesCompat.getDrawable(view.resources, R.drawable.button_background_16dp, null)
+snackbar.view.background = bgDrawable
+val properBackgroundColor = getProperBackgroundColor()
+val backgroundColor = if (properBackgroundColor == Color.BLACK) getBottomNavigationBackgroundColor().lightenColor(6) else getBottomNavigationBackgroundColor().darkenColor(6)
+snackbar.setBackgroundTint(backgroundColor)
+snackbar.setTextColor(getProperTextColor())
+snackbar.setActionTextColor(getProperPrimaryColor())
+snackbar.show()
+}
 }
 

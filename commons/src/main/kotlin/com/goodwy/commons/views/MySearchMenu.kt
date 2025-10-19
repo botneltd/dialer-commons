@@ -11,7 +11,7 @@ import com.goodwy.commons.activities.BaseSimpleActivity
 import com.goodwy.commons.databinding.MenuSearchBinding
 import com.goodwy.commons.extensions.*
 
-class MySearchMenu(context: Context, attrs: AttributeSet) : AppBarLayout(context, attrs) {
+open class MySearchMenu(context: Context, attrs: AttributeSet) : AppBarLayout(context, attrs) {
     var isSearchOpen = false
     var useArrowIcon = false
     var onSearchOpenListener: (() -> Unit)? = null
@@ -35,19 +35,19 @@ class MySearchMenu(context: Context, attrs: AttributeSet) : AppBarLayout(context
             }
         }
 
-//        post {
-//            binding.topToolbarSearch.setOnFocusChangeListener { v, hasFocus ->
-//                if (hasFocus) {
-//                    openSearch()
-//                }
-//            }
-//        }
+        post {
+            binding.topToolbarSearch.setOnFocusChangeListener { v, hasFocus ->
+                if (hasFocus) {
+                    openSearch()
+                }
+            }
+        }
 
         binding.topToolbarSearch.onTextChangeListener { text ->
             val size = text.length
-            if (size == 1) openSearch()
+//            if (size == 1) post { openSearch() }
             if (size == 0 && !useArrowIcon) {
-                binding.topToolbarSearchIcon.setImageResource(R.drawable.ic_search_vector)
+//                binding.topToolbarSearchIcon.setImageResource(R.drawable.ic_search_vector)
                 binding.topToolbarSearchIcon.contentDescription = resources.getString(R.string.search)
             }
             onSearchTextChangedListener?.invoke(text)

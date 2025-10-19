@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComposableParamOrder:MainScreen.kt$MainScreen</ID>
+    <ID>ImplicitDefaultLocale:ThemeColorsDialog.kt$String.format("#%02X%02X%02X", red, green, blue)</ID>
+    <ID>ImplicitDefaultLocale:ThemeColorsDialog.kt$String.format("#%02X%02X%02X%02X", red, green, blue, alpha)</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$12</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$2024</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$30</ID>
+    <ID>MagicNumber:ThemeColorsDialog.kt$255</ID>
+    <ID>MaxLineLength:MainActivity.kt$MainActivity$faqItems.add(FAQItem(com.goodwy.commons.R.string.faq_2_title_commons, com.goodwy.commons.R.string.faq_2_text_commons))</ID>
+    <ID>MaxLineLength:MainActivity.kt$MainActivity$faqItems.add(FAQItem(com.goodwy.commons.R.string.faq_6_title_commons, com.goodwy.commons.R.string.faq_6_text_commons))</ID>
+    <ID>MaxLineLength:MainActivity.kt$MainActivity$val isTopAppBarColorIcon by config.isTopAppBarColorIcon.collectAsStateWithLifecycle(initialValue = config.topAppBarColorIcon)</ID>
+    <ID>MaxLineLength:MainActivity.kt$MainActivity$val isUse24HourFormat by config.isUse24HourFormat.collectAsStateWithLifecycle(initialValue = config.use24HourFormat)</ID>
+    <ID>MaxLineLength:MainActivity.kt$MainActivity$val showMoreApps = onEventValue { !resources.getBoolean(com.goodwy.commons.R.bool.hide_google_relations) }</ID>
+    <ID>MaxLineLength:MainScreen.kt$customTopBar</ID>
+    <ID>MaxLineLength:TestDialogActivity.kt$TestDialogActivity$//todo create helper for private fun createFolder(path: String, alertDialog: AlertDialog) to extract bundled logic</ID>
+    <ID>MaxLineLength:TestDialogActivity.kt$TestDialogActivity$AddOrEditBlockedNumberAlertDialog(alertDialogState = this, blockedNumber = null, deleteBlockedNumber = {}) {}</ID>
+    <ID>MaxLineLength:TestDialogActivity.kt$TestDialogActivity$ChangeDateTimeFormatAlertDialog</ID>
+    <ID>MaxLineLength:TestDialogActivity.kt$TestDialogActivity$Log.d("getGridColorPickerAlertDialogState", "wasPositivePressed=$wasPositivePressed color=${color.toHex()}")</ID>
+    <ID>MaxLineLength:TestDialogActivity.kt$TestDialogActivity$Log.d("getLineColorPickerAlertDialogState", "wasPositivePressed=$wasPositivePressed color=${color.toHex()}")</ID>
+    <ID>MaxLineLength:TestDialogActivity.kt$TestDialogActivity$SimpleListItem(2, R.string.record_audio, imageRes = R.drawable.ic_microphone_vector, selected = true)</ID>
+    <ID>ModifierMissing:MainScreen.kt$MainScreen</ID>
+    <ID>TooManyFunctions:MainActivity.kt$MainActivity : BaseSimpleActivity</ID>
+    <ID>TooManyFunctions:TestDialogActivity.kt$TestDialogActivity : ComponentActivity</ID>
+    <ID>UnusedParameter:MainActivity.kt$MainActivity$rateStarsAlertDialogState: AlertDialogState = getRateStarsAlertDialogState()</ID>
+    <ID>UnusedPrivateMember:MainActivity.kt$MainActivity$private fun securityDialog()</ID>
+    <ID>UnusedPrivateMember:MainScreen.kt$@Composable @MyDevices private fun MainScreenPreview()</ID>
+    <ID>UnusedPrivateMember:MainScreen.kt$@Composable @ReadOnlyComposable private fun actionModeBgColor(): Color</ID>
+    <ID>WildcardImport:MainActivity.kt$import com.goodwy.commons.compose.extensions.*</ID>
+    <ID>WildcardImport:MainActivity.kt$import com.goodwy.commons.extensions.*</ID>
+    <ID>WildcardImport:MainScreen.kt$import androidx.compose.material3.*</ID>
+    <ID>WildcardImport:MainScreen.kt$import androidx.compose.runtime.*</ID>
+    <ID>WildcardImport:TestDialogActivity.kt$import androidx.compose.foundation.layout.*</ID>
+    <ID>WildcardImport:TestDialogActivity.kt$import com.goodwy.commons.dialogs.*</ID>
+    <ID>WildcardImport:TestDialogActivity.kt$import com.goodwy.commons.extensions.*</ID>
+    <ID>WildcardImport:TestDialogActivity.kt$import com.goodwy.commons.models.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

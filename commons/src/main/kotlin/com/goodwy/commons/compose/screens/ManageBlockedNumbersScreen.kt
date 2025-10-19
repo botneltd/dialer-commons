@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.semantics.onLongClick
@@ -47,14 +48,16 @@ import com.goodwy.commons.compose.extensions.*
 import com.goodwy.commons.compose.menus.ActionItem
 import com.goodwy.commons.compose.menus.ActionMenu
 import com.goodwy.commons.compose.menus.OverflowMode
-import com.goodwy.commons.compose.settings.SettingsHorizontalDivider
 import com.goodwy.commons.compose.settings.SettingsSwitchComponent
 import com.goodwy.commons.compose.lists.*
+import com.goodwy.commons.compose.settings.SettingsPreferenceComponent
 import com.goodwy.commons.compose.system_ui_controller.rememberSystemUiController
 import com.goodwy.commons.compose.theme.*
 import com.goodwy.commons.compose.theme.model.Theme
 import com.goodwy.commons.extensions.darkenColor
 import com.goodwy.commons.extensions.getContrastColor
+import com.goodwy.commons.helpers.BLOCKING_TYPE_DO_NOT_REJECT
+import com.goodwy.commons.helpers.BLOCKING_TYPE_SILENCE
 import com.goodwy.commons.models.BlockedNumber
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -87,6 +90,8 @@ internal fun ManageBlockedNumbersScreen(
     onDelete: (Set<Long>) -> Unit,
     onEdit: (BlockedNumber) -> Unit,
     onCopy: (BlockedNumber) -> Unit,
+    isBlockingType: Int,
+    onBlockingType: () -> Unit,
 ) {
     val selectedIds: MutableState<Set<Long>> = rememberSaveable { mutableStateOf(emptySet()) }
     val hapticFeedback = LocalHapticFeedback.current
@@ -149,26 +154,6 @@ internal fun ManageBlockedNumbersScreen(
                         )
                     }
                 }
-
-                SettingsSwitchComponent(
-                    label = if (isDialer) stringResource(id = R.string.block_unknown_calls) else stringResource(id = R.string.block_unknown_messages),
-                    initialValue = isBlockUnknownSelected,
-                    onChange = onBlockUnknownSelectedChange,
-                    modifier = Modifier.topAppBarPaddings(),
-                    scaleSwitch = 0.8F,
-                    showCheckmark = showCheckmarksOnSwitches,
-                    checkmark = ImageVector.vectorResource(R.drawable.ic_no_accounts)
-                )
-                SettingsSwitchComponent(
-                    label = if (isDialer) stringResource(id = R.string.block_hidden_calls) else stringResource(id = R.string.block_hidden_messages),
-                    initialValue = isHiddenSelected,
-                    onChange = onHiddenSelectedChange,
-                    modifier = Modifier.topAppBarPaddings(),
-                    scaleSwitch = 0.8F,
-                    showCheckmark = showCheckmarksOnSwitches,
-                    checkmark = ImageVector.vectorResource(R.drawable.ic_question)
-                )
-                SettingsHorizontalDivider(modifier = Modifier.topAppBarPaddings())
             }
         },
     ) { paddingValues ->
@@ -195,7 +180,7 @@ internal fun ManageBlockedNumbersScreen(
         LazyColumn(
             state = state,
             modifier = Modifier.ifFalse(blockedNumbers.isNullOrEmpty()) {
-                Modifier.listDragHandlerLongKey(
+                listDragHandlerLongKey(
                     isScrollingUp = state.isScrollingUp(),
                     lazyListState = state,
                     haptics = hapticFeedback,
@@ -212,6 +197,44 @@ internal fun ManageBlockedNumbersScreen(
             verticalArrangement = Arrangement.spacedBy(SimpleTheme.dimens.padding.extraSmall),
             contentPadding = PaddingValues(bottom = paddingValues.calculateBottomPadding())
         ) {
+            item {
+                SettingsSwitchComponent(
+                    label = if (isDialer) stringResource(id = R.string.block_unknown_calls) else stringResource(id = R.string.block_unknown_messages),
+                    initialValue = isBlockUnknownSelected,
+                    onChange = onBlockUnknownSelectedChange,
+                    modifier = Modifier.topAppBarPaddings(),
+                    scaleSwitch = 0.8F,
+                    showCheckmark = showCheckmarksOnSwitches,
+                    checkmark = ImageVector.vectorResource(R.drawable.ic_no_accounts)
+                )
+                SettingsSwitchComponent(
+                    label = if (isDialer) stringResource(id = R.string.block_hidden_calls) else stringResource(id = R.string.block_hidden_messages),
+                    initialValue = isHiddenSelected,
+                    onChange = onHiddenSelectedChange,
+                    modifier = Modifier.topAppBarPaddings(),
+                    scaleSwitch = 0.8F,
+                    showCheckmark = showCheckmarksOnSwitches,
+                    checkmark = ImageVector.vectorResource(R.drawable.ic_question)
+                )
+                if (isDialer) SettingsPreferenceComponent(
+                    label = stringResource(id = com.goodwy.strings.R.string.blocking_type),
+                    sublabel = when (isBlockingType) {
+                        BLOCKING_TYPE_DO_NOT_REJECT -> stringResource(id = com.goodwy.strings.R.string.blocking_type_do_not_reject_summary)
+                        BLOCKING_TYPE_SILENCE -> stringResource(id = com.goodwy.strings.R.string.blocking_type_silence_summary)
+                        else -> stringResource(id = com.goodwy.strings.R.string.blocking_type_reject_summary)
+
+                    },
+                    value = when (isBlockingType) {
+                        BLOCKING_TYPE_DO_NOT_REJECT -> stringResource(id = com.goodwy.strings.R.string.blocking_type_do_not_reject)
+                        BLOCKING_TYPE_SILENCE -> stringResource(id = com.goodwy.strings.R.string.blocking_type_silence)
+                        else -> stringResource(id = com.goodwy.strings.R.string.blocking_type_reject)
+
+                    },
+                    isPreferenceEnabled = isBlockUnknownSelected || isHiddenSelected,
+                    doOnPreferenceClick = onBlockingType
+                )
+                Spacer(modifier = Modifier.size(8.dp))
+            }
             when {
                 !hasGivenPermissionToBlock -> {
                     noPermissionToBlock(setAsDefault = setAsDefault)
@@ -238,7 +261,7 @@ internal fun ManageBlockedNumbersScreen(
                                     }
                                 }
                                 .ifTrue(!isInActionMode) {
-                                    Modifier.combinedClickable(onLongClick = {
+                                    combinedClickable(onLongClick = {
                                         val selectable = longPressSelectableValue(lastClickedValue, blockedNumber, triggerReset) { bNumber1, bNumber2 ->
                                             updateSelectedIndices(blockedNumbers, bNumber1, bNumber2, selectedIds)
                                         }
@@ -249,7 +272,7 @@ internal fun ManageBlockedNumbersScreen(
                                     })
                                 }
                                 .ifTrue(isInActionMode) {
-                                    Modifier.combinedClickable(
+                                    combinedClickable(
                                         interactionSource = rememberMutableInteractionSource(),
                                         indication = null,
                                         enabled = !hasDraggingStarted,
@@ -431,7 +454,7 @@ private fun BlockedNumberTrailingContent(modifier: Modifier = Modifier, onDelete
             dismissMenu()
         }, text = {
             Text(
-                text = stringResource(id = R.string.delete),
+                text = stringResource(id = R.string.unblock),
                 modifier = Modifier.fillMaxWidth(),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Normal
@@ -526,7 +549,7 @@ private fun BlockedNumberActionMenu(
     val actionMenus = remember(selectedIdsCount) {
         val delete =
             ActionItem(
-                nameRes = R.string.delete,
+                nameRes = R.string.unblock,
                 icon = Icons.Rounded.Delete,
                 doAction = onDelete,
                 overflowMode = OverflowMode.NEVER_OVERFLOW,
@@ -549,7 +572,14 @@ private fun BlockedNumberActionMenu(
         }
         list.toImmutableList()
     }
-    ActionMenu(items = actionMenus, numIcons = if (selectedIdsCount == 1) 2 else 1, isMenuVisible = true, onMenuToggle = { }, iconsColor = iconColor)
+    var isMenuVisible by remember { mutableStateOf(false) }
+    ActionMenu(
+        items = actionMenus,
+        numIcons = if (selectedIdsCount == 1) 2 else 1,
+        isMenuVisible = isMenuVisible,
+        onMenuToggle = { isMenuVisible = it },
+        iconsColor = iconColor
+    )
 }
 
 @Composable
@@ -573,6 +603,9 @@ private fun NonActionModeToolbar(
         title = { scrolledTextColor ->
             Text(
                 text = stringResource(id = R.string.manage_blocked_numbers),
+                fontSize = with(LocalDensity.current) {
+                    dimensionResource(id = R.dimen.actionbar_text_size).toSp()
+                },
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 color = scrolledTextColor
@@ -590,7 +623,7 @@ private fun NonActionModeToolbar(
         actions = {
             val actionMenus = remember {
                 listOf(
-                    ActionItem(R.string.add_a_blocked_number, icon = Icons.Rounded.Add, doAction = onAdd, overflowMode = OverflowMode.ALWAYS_OVERFLOW),
+                    ActionItem(R.string.add_a_blocked_number, icon = Icons.Rounded.Add, doAction = onAdd, overflowMode = OverflowMode.IF_NECESSARY),
                     ActionItem(R.string.import_blocked_numbers, doAction = onImportBlockedNumbers, overflowMode = OverflowMode.ALWAYS_OVERFLOW),
                     ActionItem(R.string.export_blocked_numbers, doAction = onExportBlockedNumbers, overflowMode = OverflowMode.ALWAYS_OVERFLOW),
                 ).toImmutableList()
@@ -692,7 +725,10 @@ private fun ManageBlockedNumbersScreenPreview(@PreviewParameter(BooleanPreviewPa
                 BlockedNumber(id = 8, number = "5552221111", normalizedNumber = "5552221111", numberToCompare = "5552221111")
             ).toImmutableList(),
             onDelete = {},
-            onEdit = {}
-        ) {}
+            onEdit = {},
+            onCopy = {},
+            isBlockingType = 1,
+            onBlockingType = {}
+        ) //{}
     }
 }

@@ -40,6 +40,7 @@ class LineColorPickerGrid @JvmOverloads constructor(
             if (!wasInit) {
                 wasInit = true
                 initColorPicker()
+                @Suppress("SuspiciousIndentation")
                 updateItemMargin(lastColorIndex, false)
             }
         }
@@ -50,6 +51,9 @@ class LineColorPickerGrid @JvmOverloads constructor(
                 MotionEvent.ACTION_MOVE, MotionEvent.ACTION_UP -> {
                     if (pickerWidth != 0 && stripeWidth != 0) {
                         touchAt(motionEvent.x.toInt())
+                    }
+                    if (motionEvent.action == MotionEvent.ACTION_UP) {
+                        view.performClick()
                     }
                 }
             }
@@ -69,6 +73,7 @@ class LineColorPickerGrid @JvmOverloads constructor(
         }
 
         initColorPicker()
+        @Suppress("SuspiciousIndentation")
         updateItemMargin(lastColorIndex, false)
     }
 
@@ -93,10 +98,12 @@ class LineColorPickerGrid @JvmOverloads constructor(
         }
         val index = Math.max(0, Math.min(colorIndex, colorsCount - 1))
       //  if (lastColorIndex != index) { // если включить то курсор не переводится на предыдущую позицию в другой строке
-            updateItemMargin(lastColorIndex, true)
-            lastColorIndex = index
-            updateItemMargin(index, false)
-            listener?.colorChanged(index, colors[index])
+        @Suppress("SuspiciousIndentation")
+        updateItemMargin(lastColorIndex, true)
+        lastColorIndex = index
+        @Suppress("SuspiciousIndentation")
+        updateItemMargin(index, false)
+        listener?.colorChanged(index, colors[index])
        // }
     }
 
