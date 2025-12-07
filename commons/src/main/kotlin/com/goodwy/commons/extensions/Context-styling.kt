@@ -30,19 +30,16 @@ fun Context.isDarkTheme() = baseConfig.backgroundColor == resources.getColor(R.c
 
 fun Context.isBlackTheme() = baseConfig.backgroundColor == resources.getColor(R.color.theme_black_background_color, theme)
 
-fun Context.getProperTextColor() = when {
-    isDynamicTheme() -> resources.getColor(R.color.you_neutral_text_color, theme)
-    else -> baseConfig.textColor
+fun Context.getProperTextColor(): Int {
+    return MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurface, Color.WHITE)
 }
 
-fun Context.getProperBackgroundColor() = when {
-    isDynamicTheme() -> resources.getColor(R.color.you_background_color, theme)
-    else -> baseConfig.backgroundColor
+fun Context.getProperBackgroundColor(): Int {
+    return MaterialColors.getColor(this, com.google.android.material.R.attr.colorSurface, Color.BLACK)
 }
 
-fun Context.getProperPrimaryColor() = when {
-    isDynamicTheme() -> resources.getColor(R.color.you_primary_color, theme)
-    else -> baseConfig.primaryColor
+fun Context.getProperPrimaryColor(): Int {
+    return MaterialColors.getColor(this, com.google.android.material.R.attr.colorPrimary, Color.WHITE)
 }
 
 fun Context.getProperAccentColor() = when {
@@ -51,9 +48,11 @@ fun Context.getProperAccentColor() = when {
     else -> baseConfig.accentColor
 }
 
-fun Context.getProperStatusBarColor() = when {
-    isDynamicTheme() -> resources.getColor(R.color.you_status_bar_color, theme)
-    else -> getProperBackgroundColor()
+fun Context.getProperStatusBarColor(): Int {
+    return MaterialColors.getColor(this,
+        com.google.android.material.R.attr.colorSurfaceVariant,
+        Color.BLACK
+    )
 }
 
 // get the color of the status bar with material activity, if the layout is scrolled down a bit
