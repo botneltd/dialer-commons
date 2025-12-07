@@ -215,15 +215,9 @@ fun Context.toggleAppIconColor(appId: String, colorIndex: Int, color: Int, enabl
 fun Context.getAppIconColors() = resources.getIntArray(R.array.md_app_icon_colors).toCollection(ArrayList())
 
 fun Context.getBottomNavigationBackgroundColor(): Int {
-    val baseColor = baseConfig.backgroundColor
-    val bottomColor = when {
-        isDynamicTheme() -> resources.getColor(R.color.you_status_bar_color, theme)
-        baseColor == Color.WHITE -> resources.getColor(R.color.bottom_tabs_light_background, theme)
-        baseColor == Color.BLACK -> resources.getColor(R.color.bottom_tabs_black_background, theme)
-        else -> baseConfig.backgroundColor.lightenColor(4)
-    }
-    return bottomColor
+    return getColorAttr(com.google.android.material.R.attr.colorSurfaceVariant, Color.DKGRAY)
 }
+
 
 fun Context.getDialogBackgroundColor(): Int {
     return when {

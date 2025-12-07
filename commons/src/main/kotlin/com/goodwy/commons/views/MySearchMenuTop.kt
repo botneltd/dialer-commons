@@ -5,12 +5,20 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.LayoutInflater
 import com.google.android.material.appbar.AppBarLayout
 import com.goodwy.commons.R
 import com.goodwy.commons.activities.BaseSimpleActivity
 import com.goodwy.commons.databinding.MenuSearchTopBinding
 import com.goodwy.commons.extensions.*
+import androidx.annotation.AttrRes
+
+fun Context.getColorAttr(@AttrRes attr: Int, defaultColor: Int = Color.BLACK): Int {
+    val typedValue = TypedValue()
+    theme.resolveAttribute(attr, typedValue, true)
+    return typedValue.data
+}
 
 open class MySearchMenuTop(context: Context, attrs: AttributeSet) : AppBarLayout(context, attrs) {
     var isSearchOpen = false
@@ -105,25 +113,40 @@ open class MySearchMenuTop(context: Context, attrs: AttributeSet) : AppBarLayout
     }
 
     fun updateColors() {
-        val backgroundColor = context.getProperBackgroundColor()
-        val contrastColor = backgroundColor.getContrastColor()
-        val primaryColor = context.getProperPrimaryColor()
-        val bottomNavigationBackgroundColor = context.getBottomNavigationBackgroundColor()
+        // Fetch colors from the Material3 Dark theme
+        val surface = context.getColorAttr(com.google.android.material.R.attr.colorSurface)
+        val onSurface = context.getColorAttr(com.google.android.material.R.attr.colorOnSurface)
+        val primary = context.getColorAttr(com.google.android.material.R.attr.colorPrimary)
+        val surfaceVariant = context.getColorAttr(com.google.android.material.R.attr.colorSurfaceVariant)
+        val onSurfaceVariant = context.getColorAttr(com.google.android.material.R.attr.colorOnSurfaceVariant)
 
-        setBackgroundColor(backgroundColor)
-        binding.topAppBarLayout.setBackgroundColor(backgroundColor)
-        val searchIconColor = if (context.baseConfig.topAppBarColorIcon) primaryColor else contrastColor
+        // Set backgrounds
+        setBackgroundColor(surface)
+        binding.topAppBarLayout.setBackgroundColor(surface)
+
+        // Search icon color: primary or onSurface
+        val searchIconColor = if (context.baseConfig.topAppBarColorIcon) primary else onSurface
         binding.topToolbarSearchIcon.applyColorFilter(searchIconColor)
-        //binding.topToolbarHolder.background?.applyColorFilter(primaryColor.adjustAlpha(LOWER_ALPHA))
-        //binding.topToolbarSearch.setTextColor(contrastColor)
-        //binding.topToolbarSearch.setHintTextColor(contrastColor.adjustAlpha(MEDIUM_ALPHA))
-        binding.topToolbarSearch.setColors(contrastColor, primaryColor, context.getProperTextCursorColor())
-        (context as? BaseSimpleActivity)?.updateTopBarColors(binding.topToolbar, Color.TRANSPARENT, useColorForStatusBar = false)
 
+        // Text field styling: text and hint
+        binding.topToolbarSearch.setTextColor(onSurface)
+        binding.topToolbarSearch.setHintTextColor(onSurfaceVariant)
+
+        // Top bar colors — match the BaseSimpleActivity signature
+        // Most versions: updateTopBarColors(toolbar: Toolbar, colorBackground: Int)
+        (context as? BaseSimpleActivity)?.updateTopBarColors(
+            binding.topToolbar,
+            Color.TRANSPARENT
+        )
+
+        // Toolbar holder background drawable tinted with surfaceVariant
         binding.topToolbarHolder.setBackgroundResource(R.drawable.search_bg)
-        binding.topToolbarHolder.backgroundTintList = ColorStateList.valueOf(bottomNavigationBackgroundColor)
-        binding.topToolbarSearchClear.applyColorFilter(contrastColor)
+        binding.topToolbarHolder.backgroundTintList = ColorStateList.valueOf(surfaceVariant)
+
+        // Clear icon uses onSurface for readability
+        binding.topToolbarSearchClear.applyColorFilter(onSurface)
     }
+
 
     fun updateTitle(title: String) {
         binding.topToolbar.title = title
