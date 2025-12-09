@@ -104,26 +104,43 @@ fun Context.syncGlobalConfig(callback: (() -> Unit)? = null) {
             if (it != null) {
                 baseConfig.apply {
                     showCheckmarksOnSwitches = it.showCheckmarksOnSwitches
-                    if (it.isGlobalThemingEnabled()) {
-                        isGlobalThemeEnabled = true
-                        isSystemThemeEnabled = it.themeType == GLOBAL_THEME_SYSTEM
-                        textColor = it.textColor
-                        backgroundColor = it.backgroundColor
-                        primaryColor = it.primaryColor
-                        accentColor = it.accentColor
 
-                        if (baseConfig.appIconColor != it.appIconColor) {
-                            baseConfig.appIconColor = it.appIconColor
-                            checkAppIconColor()
-                        }
-                    }
+                    // ↓↓↓ remove ALL global theme overrides
+                    isGlobalThemeEnabled = false
+                    isSystemThemeEnabled = false
+
+                    // ↓↓↓ force dark
+                    backgroundColor = Color.BLACK
+                    textColor = Color.WHITE
+                    primaryColor = Color.WHITE
+                    accentColor = Color.WHITE
                 }
             }
+
+            // ↓↓↓ final override — guarantee dark mode
+            baseConfig.apply {
+                isGlobalThemeEnabled = false
+                isSystemThemeEnabled = false
+                backgroundColor = Color.BLACK
+                textColor = Color.WHITE
+                primaryColor = Color.WHITE
+                accentColor = Color.WHITE
+            }
+
             callback?.invoke()
         }
     } else {
-        baseConfig.isGlobalThemeEnabled = false
-        baseConfig.showCheckmarksOnSwitches = false
+
+        // even if global config disabled — force dark
+        baseConfig.apply {
+            isGlobalThemeEnabled = false
+            isSystemThemeEnabled = false
+            backgroundColor = Color.BLACK
+            textColor = Color.WHITE
+            primaryColor = Color.WHITE
+            accentColor = Color.WHITE
+        }
+
         callback?.invoke()
     }
 }
