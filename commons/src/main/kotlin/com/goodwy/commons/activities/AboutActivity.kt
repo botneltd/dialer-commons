@@ -39,7 +39,7 @@ class AboutActivity : BaseComposeActivity() {
                         AboutNewSection(
                             appName = appName,
                             appVersion = intent.getStringExtra(APP_VERSION_NAME) ?: "",
-                            onMoreAppsClick = ::launchMoreAppsFromUsIntent,
+                            //onMoreAppsClick = ::launchMoreAppsFromUsIntent,
                             onPrivacyPolicyClick = ::onPrivacyPolicyClick,
                             onFAQClick = ::launchFAQActivity,
                             onTipJarClick = ::onTipJarClick,
