@@ -175,7 +175,7 @@ class MainActivity : BaseSimpleActivity() {
     private val startDateSetListener = DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
     }
 
-    override fun getAppLauncherName() = getString(R.string.commons_app_name)
+    override fun getAppLauncherName() = getString(R.string.app_name_g)
 
     override fun getAppIconIDs() = arrayListOf(
         R.mipmap.ic_launcher,

@@ -31,21 +31,15 @@ class AboutActivity : BaseComposeActivity() {
             val isTopAppBarColorIcon by config.isTopAppBarColorIcon.collectAsStateWithLifecycle(initialValue = config.topAppBarColorIcon)
             val isTopAppBarColorTitle by config.isTopAppBarColorTitle.collectAsStateWithLifecycle(initialValue = config.topAppBarColorTitle)
             AppThemeSurface {
-                val rateStarsAlertDialogState = getRateStarsAlertDialogState()
-                val onRateUsClickAlertDialogState = getOnRateUsClickAlertDialogState(rateStarsAlertDialogState::show)
+                //val rateStarsAlertDialogState = getRateStarsAlertDialogState()
+                //val onRateUsClickAlertDialogState = getOnRateUsClickAlertDialogState(rateStarsAlertDialogState::show)
                 AboutScreen(
                     goBack = ::finish,
                     aboutSection = {
                         AboutNewSection(
                             appName = appName,
                             appVersion = intent.getStringExtra(APP_VERSION_NAME) ?: "",
-                            onRateUsClick = {
-                                onRateUsClick(
-                                    showConfirmationAdvancedDialog = onRateUsClickAlertDialogState::show,
-                                    showRateStarsDialog = rateStarsAlertDialogState::show
-                                )
-                            },
-                            onMoreAppsClick = ::launchMoreAppsFromUsIntent,
+                            //onMoreAppsClick = ::launchMoreAppsFromUsIntent,
                             onPrivacyPolicyClick = ::onPrivacyPolicyClick,
                             onFAQClick = ::launchFAQActivity,
                             onTipJarClick = ::onTipJarClick,
