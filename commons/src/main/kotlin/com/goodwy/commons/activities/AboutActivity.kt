@@ -25,7 +25,7 @@ class AboutActivity : BaseComposeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Edge-to-edge support
+        // Enable edge-to-edge layout
         enableEdgeToEdgeSimple()
 
         setContent {
