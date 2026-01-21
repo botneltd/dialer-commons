@@ -35,7 +35,6 @@ class AboutActivity : BaseComposeActivity() {
             val isTopAppBarColorTitle by config.isTopAppBarColorTitle.collectAsStateWithLifecycle(
                 initialValue = config.topAppBarColorTitle
             )
-
             AppThemeSurface {
                 // Only one AboutScreen with TopAppBar
                 AboutScreen(
