@@ -9,30 +9,34 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.goodwy.commons.R
-import com.goodwy.commons.compose.alert_dialog.rememberAlertDialogState
 import com.goodwy.commons.compose.extensions.config
 import com.goodwy.commons.compose.extensions.enableEdgeToEdgeSimple
-import com.goodwy.commons.compose.extensions.rateStarsRedirectAndThankYou
-import com.goodwy.commons.compose.screens.*
+import com.goodwy.commons.compose.screens.AboutNewSection
+import com.goodwy.commons.compose.screens.AboutScreen
 import com.goodwy.commons.compose.theme.AppThemeSurface
-import com.goodwy.commons.dialogs.ConfirmationAdvancedAlertDialog
-import com.goodwy.commons.dialogs.RateStarsAlertDialog
 import com.goodwy.commons.extensions.*
 import com.goodwy.commons.helpers.*
 import com.goodwy.commons.models.FAQItem
 
 class AboutActivity : BaseComposeActivity() {
+
     private val appName get() = intent.getStringExtra(APP_NAME) ?: ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Enable edge-to-edge layout
         enableEdgeToEdgeSimple()
+
         setContent {
-            val isTopAppBarColorIcon by config.isTopAppBarColorIcon.collectAsStateWithLifecycle(initialValue = config.topAppBarColorIcon)
-            val isTopAppBarColorTitle by config.isTopAppBarColorTitle.collectAsStateWithLifecycle(initialValue = config.topAppBarColorTitle)
+            val isTopAppBarColorIcon by config.isTopAppBarColorIcon.collectAsStateWithLifecycle(
+                initialValue = config.topAppBarColorIcon
+            )
+            val isTopAppBarColorTitle by config.isTopAppBarColorTitle.collectAsStateWithLifecycle(
+                initialValue = config.topAppBarColorTitle
+            )
             AppThemeSurface {
-                //val rateStarsAlertDialogState = getRateStarsAlertDialogState()
-                //val onRateUsClickAlertDialogState = getOnRateUsClickAlertDialogState(rateStarsAlertDialogState::show)
+                // Only one AboutScreen with TopAppBar
                 AboutScreen(
                     goBack = ::finish,
                     aboutSection = {
@@ -48,84 +52,26 @@ class AboutActivity : BaseComposeActivity() {
                         )
                     },
                     isTopAppBarColorIcon = isTopAppBarColorIcon,
-                    isTopAppBarColorTitle = isTopAppBarColorTitle,
+                    isTopAppBarColorTitle = isTopAppBarColorTitle
                 )
             }
         }
     }
 
-    @Composable
-    private fun getRateStarsAlertDialogState() =
-        rememberAlertDialogState().apply {
-            DialogMember {
-                RateStarsAlertDialog(
-                    alertDialogState = this,
-                    onRating = ::rateStarsRedirectAndThankYou
-                )
-            }
-        }
-
-    @Composable
-    private fun getOnRateUsClickAlertDialogState(showRateStarsDialog: () -> Unit) =
-        rememberAlertDialogState().apply {
-            DialogMember {
-                ConfirmationAdvancedAlertDialog(
-                    alertDialogState = this,
-                    message = "${getString(R.string.before_asking_question_read_faq)}\n\n${getString(R.string.make_sure_latest)}",
-                    messageId = null,
-                    positive = R.string.read_faq,
-                    negative = R.string.skip
-                ) { success ->
-                    if (success) {
-                        launchFAQActivity()
-                    } else {
-                        launchRateUsPrompt(showRateStarsDialog)
-                    }
-                }
-            }
-        }
-
     private fun launchFAQActivity() {
         val faqItems = intent.getSerializableExtra(APP_FAQ) as ArrayList<FAQItem>
         Intent(applicationContext, FAQActivity::class.java).apply {
-            putExtra(
-                APP_ICON_IDS,
-                intent.getIntegerArrayListExtra(APP_ICON_IDS) ?: ArrayList<String>()
-            )
+            putExtra(APP_ICON_IDS, intent.getIntegerArrayListExtra(APP_ICON_IDS) ?: ArrayList<String>())
             putExtra(APP_LAUNCHER_NAME, intent.getStringExtra(APP_LAUNCHER_NAME) ?: "")
             putExtra(APP_FAQ, faqItems)
             startActivity(this)
         }
     }
 
-    private fun onRateUsClick(
-        showConfirmationAdvancedDialog: () -> Unit,
-        showRateStarsDialog: () -> Unit,
-    ) {
-        if (baseConfig.wasBeforeRateShown) {
-            launchRateUsPrompt(showRateStarsDialog)
-        } else {
-            baseConfig.wasBeforeRateShown = true
-            showConfirmationAdvancedDialog()
-        }
-    }
-
-    private fun launchRateUsPrompt(
-        showRateStarsDialog: () -> Unit,
-    ) {
-        if (baseConfig.wasAppRated) {
-            launchAppRatingPage()
-        } else {
-            showRateStarsDialog()
-        }
-    }
-
     private fun onPrivacyPolicyClick() {
         val appId = baseConfig.appId.removeSuffix(".debug")
         val url = when (appId) {
-// Pepron change START
             "com.sorwi.aidialer" -> "https://annoying.fi/dialerapp/privacy_policy"
-// Pepron change END
             "com.goodwy.smsmessenger" -> "https://www.goodwy.dev/about/privacy-policy-right-messages"
             "com.goodwy.contacts" -> "https://www.goodwy.dev/about/privacy-policy-right-contacts"
             "com.goodwy.gallery" -> "https://www.goodwy.dev/about/privacy-policy-right-gallery"
@@ -163,8 +109,7 @@ class AboutActivity : BaseComposeActivity() {
     }
 
     @Composable
-    private fun showGithub() =
-        remember { !intent.getStringExtra(APP_REPOSITORY_NAME).isNullOrEmpty() }
+    private fun showGithub() = remember { !intent.getStringExtra(APP_REPOSITORY_NAME).isNullOrEmpty() }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -176,14 +121,18 @@ class AboutActivity : BaseComposeActivity() {
             baseConfig.apply {
                 if (isAutoTheme()) {
                     val isUsingSystemDarkTheme = isSystemInDarkMode()
-                    textColor = resources.getColor(if (isUsingSystemDarkTheme) R.color.theme_dark_text_color else R.color.theme_light_text_color)
-                    backgroundColor =
-                        resources.getColor(if (isUsingSystemDarkTheme) R.color.theme_dark_background_color else R.color.theme_light_background_color)
+                    textColor = resources.getColor(
+                        if (isUsingSystemDarkTheme) R.color.theme_dark_text_color
+                        else R.color.theme_light_text_color
+                    )
+                    backgroundColor = resources.getColor(
+                        if (isUsingSystemDarkTheme) R.color.theme_dark_background_color
+                        else R.color.theme_light_background_color
+                    )
                     finish()
                     startActivity(intent)
                 }
             }
         }
-        return
     }
 }
