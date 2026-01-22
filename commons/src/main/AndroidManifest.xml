@@ -76,6 +76,10 @@
             android:name=".activities.AppLockActivity"
             android:exported="false" />
 
+        <activity
+            android:name="com.goodwy.commons.activities.AboutActivity"
+            android:theme="@style/Theme.Goodwy.NoActionBar" />
+
         <receiver
             android:name=".receivers.RightBroadcastReceiver"
             android:exported="true"
