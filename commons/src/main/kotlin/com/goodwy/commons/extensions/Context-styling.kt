@@ -47,6 +47,8 @@ fun Context.isBlackTheme(): Boolean {
 fun Context.isLightTheme(): Boolean {
     if (baseConfig.isSystemThemeEnabled) return !isSystemInDarkMode()
     if (isGrayTheme() || isBlackTheme()) return false
+    // Järjestelmän yötila: pääkuori käyttää theme_dark_* (getProper*), ei pelkkää tallennettua vaaleaa
+    if (isSystemInDarkMode()) return false
     val lightBg = ContextCompat.getColor(this, R.color.theme_light_background_color)
     val darkBg = ContextCompat.getColor(this, R.color.theme_dark_background_color)
     if (baseConfig.backgroundColor == lightBg) return true
@@ -57,6 +59,7 @@ fun Context.isLightTheme(): Boolean {
 fun Context.isDarkTheme(): Boolean {
     if (baseConfig.isSystemThemeEnabled) return isSystemInDarkMode()
     if (isGrayTheme() || isBlackTheme()) return false
+    if (isSystemInDarkMode()) return true
     val lightBg = ContextCompat.getColor(this, R.color.theme_light_background_color)
     val darkBg = ContextCompat.getColor(this, R.color.theme_dark_background_color)
     if (baseConfig.backgroundColor == lightBg) return false
@@ -72,14 +75,22 @@ fun Context.getProperTextColor(): Int =
     if (isDynamicTheme()) {
         MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurface, Color.WHITE)
     } else {
-        baseConfig.textColor
+        if (isSystemInDarkMode()) {
+            ContextCompat.getColor(this, R.color.theme_dark_text_color)
+        } else {
+            baseConfig.textColor
+        }
     }
 
 fun Context.getProperBackgroundColor(): Int =
     if (isDynamicTheme()) {
         MaterialColors.getColor(this, com.google.android.material.R.attr.colorSurface, Color.BLACK)
     } else {
-        baseConfig.backgroundColor
+        if (isSystemInDarkMode()) {
+            ContextCompat.getColor(this, R.color.theme_dark_background_color)
+        } else {
+            baseConfig.backgroundColor
+        }
     }
 
 fun Context.getProperPrimaryColor(): Int =
@@ -96,28 +107,28 @@ fun Context.getProperStatusBarColor(): Int =
     if (isDynamicTheme()) {
         MaterialColors.getColor(this, com.google.android.material.R.attr.colorSurfaceVariant, Color.BLACK)
     } else {
-        baseConfig.backgroundColor
+        getProperBackgroundColor()
     }
 
 fun Context.getBottomNavigationBackgroundColor(): Int =
     if (isDynamicTheme()) {
         MaterialColors.getColor(this, com.google.android.material.R.attr.colorSurfaceVariant, Color.DKGRAY)
     } else {
-        baseConfig.backgroundColor
+        getProperBackgroundColor()
     }
 
 fun Context.getDialogBackgroundColor(): Int =
     if (isDynamicTheme()) {
         MaterialColors.getColor(this, com.google.android.material.R.attr.colorSurface, Color.BLACK)
     } else {
-        baseConfig.backgroundColor
+        getProperBackgroundColor()
     }
 
 fun Context.getSurfaceColor(): Int =
     if (isDynamicTheme()) {
         MaterialColors.getColor(this, com.google.android.material.R.attr.colorSurfaceContainerLow, Color.BLACK)
     } else {
-        baseConfig.backgroundColor.lightenColor(4)
+        getProperBackgroundColor().lightenColor(4)
     }
 
 fun Context.getProperTextCursorColor(): Int =

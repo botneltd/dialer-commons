@@ -123,6 +123,15 @@ open class MySearchMenu(context: Context, attrs: AttributeSet) : AppBarLayout(co
         binding.topToolbarSearchClear.applyColorFilter(contrastColor)
 
         if (context.baseConfig.topAppBarColorTitle) binding.topToolbar.setTitleTextColor(ColorStateList.valueOf(primaryColor))
+
+        // Päänäkymän oikean yläkulman ⋮-valikko: AppTheme.Base käyttää oletuksena tummaa overflow-tyyliä vaikka käyttäjä olisi valinnut vaalean värin.
+        // Material You / järjestelmäteema (S+): jätä aktiviteetin teema; muuten valitse overlay isLightTheme()-logiikan mukaan.
+        if (!context.isDynamicTheme()) {
+            binding.topToolbar.popupTheme = when {
+                context.isLightTheme() || context.isGrayTheme() -> R.style.ThemeOverlay_MaterialToolbarOverflow_Light
+                else -> R.style.ThemeOverlay_MaterialToolbarOverflow_Dark
+            }
+        }
     }
 
     fun updateTitle(title: String) {
