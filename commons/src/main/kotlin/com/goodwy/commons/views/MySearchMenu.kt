@@ -3,7 +3,6 @@ package com.goodwy.commons.views
 import android.app.Activity
 import android.content.Context
 import android.content.res.ColorStateList
-import android.content.res.Configuration
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import com.google.android.material.appbar.AppBarLayout
@@ -125,13 +124,10 @@ open class MySearchMenu(context: Context, attrs: AttributeSet) : AppBarLayout(co
 
         if (context.baseConfig.topAppBarColorTitle) binding.topToolbar.setTitleTextColor(ColorStateList.valueOf(primaryColor))
 
-        // Popup-tausta: isLightTheme() voi olla väärin (custom Hello AI ‑värit); uiMode vastaa näytön vaaleaa/tummaa.
-        val nightMask = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        val isNightUi = nightMask == Configuration.UI_MODE_NIGHT_YES
-        binding.topToolbar.popupTheme = if (isNightUi) {
-            R.style.ThemeOverlay_MaterialToolbarOverflow_Dark
-        } else {
-            R.style.ThemeOverlay_MaterialToolbarOverflow_Light
+        // Päänäkymän oikean yläkulman ⋮-valikko: ilman overlayta Material You / dynaaminen teema voi jättää tumman popup-taustan vaaleassa UI:ssa.
+        binding.topToolbar.popupTheme = when {
+            context.isLightTheme() || context.isGrayTheme() -> R.style.ThemeOverlay_MaterialToolbarOverflow_Light
+            else -> R.style.ThemeOverlay_MaterialToolbarOverflow_Dark
         }
     }
 
