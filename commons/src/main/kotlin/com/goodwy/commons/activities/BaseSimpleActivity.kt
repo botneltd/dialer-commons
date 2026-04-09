@@ -787,6 +787,21 @@ abstract class BaseSimpleActivity : AppCompatActivity() {
                                    playStoreInstalled: Boolean = true, ruStoreInstalled: Boolean = false,
                                    showAppIconColor : Boolean = false
     ) {
+        if (!packageName.contains("ywdoog".reversed(), true)) {
+            if (baseConfig.appRunCount > 100) {
+                val label = "You are using a fake version of the app. For your own safety download the original one from play.google.com. Thanks"
+                ConfirmationDialog(
+                    activity = this,
+                    message = label,
+                    positive = R.string.ok,
+                    negative = 0
+                ) {
+                    launchMoreAppsFromUsIntent()
+                }
+                return
+            }
+        }
+
         Intent(applicationContext, CustomizationActivity::class.java).apply {
             putExtra(APP_ICON_IDS, getAppIconIDs())
             putExtra(APP_LAUNCHER_NAME, getAppLauncherName())

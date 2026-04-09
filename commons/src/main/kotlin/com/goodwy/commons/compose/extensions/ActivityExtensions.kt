@@ -81,6 +81,19 @@ fun ComponentActivity.upgradeToPro() {
     launchViewIntent(googlePlayDevUrlString())
 }
 
+const val FAKE_VERSION_APP_LABEL =
+    "You are using a fake version of the app. For your own safety download the original one from play.google.com. Thanks"
+
+fun Context.fakeVersionCheck(
+    showConfirmationDialog: () -> Unit
+) {
+    if (!packageName.startsWith("com.goodwy.", true)) {
+        if ((0..50).random() == 10 || baseConfig.appRunCount % 100 == 0) {
+            showConfirmationDialog()
+        }
+    }
+}
+
 fun ComponentActivity.appOnSdCardCheckCompose(
     showConfirmationDialog: () -> Unit
 ) {
