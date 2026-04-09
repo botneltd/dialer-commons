@@ -379,14 +379,6 @@
         <item name="android:textColor">@color/white</item>
     </style>
 
-    <!-- Toolbar overflow (⋮): activity-teema pakottaa usein Dark-overflowin; asetetaan koodissa kun teema on vaalea. -->
-    <style name="ThemeOverlay.MaterialToolbarOverflow.Light" parent="ThemeOverlay.AppCompat.Light">
-        <item name="actionOverflowMenuStyle">@style/TopPopupMenu.Overflow.Light</item>
-    </style>
-    <style name="ThemeOverlay.MaterialToolbarOverflow.Dark" parent="ThemeOverlay.AppCompat.Dark">
-        <item name="actionOverflowMenuStyle">@style/TopPopupMenu.Overflow.Dark</item>
-    </style>
-
     <style name="OverflowMenuIconStyle">
         <item name="srcCompat">@drawable/ic_three_dots_vector</item>
         <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
