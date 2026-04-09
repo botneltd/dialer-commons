@@ -108,8 +108,7 @@ open class MySearchMenu(context: Context, attrs: AttributeSet) : AppBarLayout(co
         val backgroundColor = if (background == -1) context.getProperBackgroundColor() else background
         val contrastColor = backgroundColor.getContrastColor()
         val primaryColor = context.getProperPrimaryColor()
-        val searchHolderColor =
-            if (scrollOffset == 0) backgroundColor else backgroundColor.darkenColor(4)
+        val searchHolderColor = if (scrollOffset == 0) context.getBottomNavigationBackgroundColor() else context.getBottomNavigationBackgroundColor().darkenColor(4)
 
         setBackgroundColor(backgroundColor)
         binding.topAppBarLayout.setBackgroundColor(backgroundColor)
