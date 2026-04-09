@@ -124,10 +124,13 @@ open class MySearchMenu(context: Context, attrs: AttributeSet) : AppBarLayout(co
 
         if (context.baseConfig.topAppBarColorTitle) binding.topToolbar.setTitleTextColor(ColorStateList.valueOf(primaryColor))
 
-        // Päänäkymän oikean yläkulman ⋮-valikko: ilman overlayta Material You / dynaaminen teema voi jättää tumman popup-taustan vaaleassa UI:ssa.
-        binding.topToolbar.popupTheme = when {
-            context.isLightTheme() || context.isGrayTheme() -> R.style.ThemeOverlay_MaterialToolbarOverflow_Light
-            else -> R.style.ThemeOverlay_MaterialToolbarOverflow_Dark
+        // Päänäkymän oikean yläkulman ⋮-valikko: AppTheme.Base käyttää oletuksena tummaa overflow-tyyliä vaikka käyttäjä olisi valinnut vaalean värin.
+        // Material You / järjestelmäteema (S+): jätä aktiviteetin teema; muuten valitse overlay isLightTheme()-logiikan mukaan.
+        if (!context.isDynamicTheme()) {
+            binding.topToolbar.popupTheme = when {
+                context.isLightTheme() || context.isGrayTheme() -> R.style.ThemeOverlay_MaterialToolbarOverflow_Light
+                else -> R.style.ThemeOverlay_MaterialToolbarOverflow_Dark
+            }
         }
     }
 
