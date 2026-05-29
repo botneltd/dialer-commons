@@ -1,0 +1,6 @@
+# Copy to gradle.properties for local Gradle settings.
+# Never commit auth tokens or machine-specific paths here.
+
+android.enableJetifier=true
+android.useAndroidX=true
+org.gradle.jvmargs=-Xmx8192m
